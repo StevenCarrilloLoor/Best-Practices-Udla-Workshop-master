@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+// ARCHIVO MODIFICADO - Agregar propiedades dinámicas y año
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +22,10 @@ namespace Best_Practices.Models
         public string Model { get; set; }
         public double Gas { get; set; }
         public double FuelLimit { get; set; }
+        
+        // NUEVO: Propiedades dinámicas para extensibilidad
+        public Dictionary<string, object> AdditionalProperties { get; set; }
+        public int Year { get; set; } // NUEVO: Propiedad año
 
         #endregion
 
@@ -31,6 +38,8 @@ namespace Best_Practices.Models
             Brand = brand;
             Model = model;
             FuelLimit = fuelLimit;
+            AdditionalProperties = new Dictionary<string, object>(); // NUEVO
+            Year = DateTime.Now.Year; // NUEVO: Año por defecto
         }
 
         #endregion
@@ -55,7 +64,7 @@ namespace Best_Practices.Models
             }
             if (NeedsGas())
             {
-                throw new Exception("No enoguht gas. You need to go to Gas Station");
+                throw new Exception("No enough gas. You need to go to Gas Station");
             }
             _isEngineOn = true;
         }
@@ -74,7 +83,7 @@ namespace Best_Practices.Models
         {
             if (!_isEngineOn)
             {
-                throw new Exception("Enigne already stopped");
+                throw new Exception("Engine already stopped");
             }
 
             _isEngineOn = false;

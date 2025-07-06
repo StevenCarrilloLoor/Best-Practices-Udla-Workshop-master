@@ -1,66 +1,172 @@
-﻿@model HomeViewModel;
+﻿
+@* ARCHIVO MODIFICADO - Agregar botón Escape y mostrar propiedades adicionales *@
+
+@model HomeViewModel;
 
 @{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Sistema de Gestión de Vehículos</h1>
+    <p>Aplicación con patrones de diseño mejorados</p>
+    
     @if(!string.IsNullOrEmpty(ViewBag.ErrorMessage)) {
-        @ViewBag.ErrorMessage
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
     }
-    <table class="table">
-        <thead>
-        <th>Id</th>
-        <th>Tipo</th>
-        <th>Marca</th>
-        <th>Modelo</th>
-        <th>Color</th>
-        <th>Gallons</th>
-        <th>Status</th>
-        <th>Actions</th>
+    
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Id</th>
+                <th>Tipo</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Color</th>
+                <th>Año</th>
+                <th>Gallons</th>
+                <th>Status</th>
+                <th>Propiedades</th>
+                <th>Acciones</th>
+            </tr>
         </thead>
-        @foreach (var vehicle in Model.Vehicles)
-        {
-    <tr>
-        <td>
-            @vehicle.ID
-        </td>
-        <td>
-            @(vehicle.GetType().Name)
-        </td>
-        <td>
-            @vehicle.Brand
-        </td>
-        <td>
-            @vehicle.Model
-        </td>
-        <td>
-            @vehicle.Color
-        </td>
-        <td>
-            @vehicle.Gas.ToString("N1")
-        </td>
-        <td>
-            @(vehicle.IsEngineOn() ? "Encendido": "Apagado")
-        </td>
-        <td>
-            @if (vehicle.IsEngineOn())
+        <tbody>
+            @foreach (var vehicle in Model.Vehicles)
             {
-                <a href="/Home/StopEngine?id=@vehicle.ID">Stop Engine</a> }
-            else
-            {
-                <a href="/Home/StartEngine?id=@vehicle.ID">Start Engine</a>
+                <tr>
+                    <td>@vehicle.ID.ToString().Substring(0, 8)...</td>
+                    <td>@(vehicle.GetType().Name)</td>
+                    <td>@vehicle.Brand</td>
+                    <td>@vehicle.Model</td>
+                    <td>
+                        <span class="badge" style="background-color: @vehicle.Color.ToLower(); color: white;">
+                            @vehicle.Color
+                        </span>
+                    </td>
+                    <td>@vehicle.Year</td>
+                    <td>@vehicle.Gas.ToString("N1")</td>
+                    <td>
+                        @if(vehicle.IsEngineOn())
+                        {
+                            <span class="badge badge-success">Encendido</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">Apagado</span>
+                        }
+                    </td>
+                    <td>
+                        @if(vehicle.AdditionalProperties != null && vehicle.AdditionalProperties.Any())
+                        {
+                            <button type="button" class="btn btn-sm btn-info" 
+                                    data-toggle="modal" 
+                                    data-target="#propsModal-@vehicle.ID.ToString().Replace("-", "")">
+                                Ver (@vehicle.AdditionalProperties.Count)
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin propiedades</span>
+                        }
+                    </td>
+                    <td>
+                        @if (vehicle.IsEngineOn())
+                        {
+                            <a href="/Home/StopEngine?id=@vehicle.ID" class="btn btn-sm btn-danger">
+                                <i class="fas fa-stop"></i> Detener
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="/Home/StartEngine?id=@vehicle.ID" class="btn btn-sm btn-success">
+                                <i class="fas fa-play"></i> Encender
+                            </a>
+                        }
+                        <a href="/Home/AddGas?id=@vehicle.ID" class="btn btn-sm btn-warning">
+                            <i class="fas fa-gas-pump"></i> Cargar
+                        </a>
+                    </td>
+                </tr>
+                
+                @* Modal para propiedades adicionales *@
+                @if(vehicle.AdditionalProperties != null && vehicle.AdditionalProperties.Any())
+                {
+                    <div class="modal fade" id="propsModal-@vehicle.ID.ToString().Replace("-", "")" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Propiedades de @vehicle.Brand @vehicle.Model</h5>
+                                    <button type="button" class="close" data-dismiss="modal">
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-sm table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 40%;">Propiedad</th>
+                                                <th style="width: 60%;">Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach(var prop in vehicle.AdditionalProperties.OrderBy(p => p.Key))
+                                            {
+                                                <tr>
+                                                    <td><strong>@prop.Key:</strong></td>
+                                                    <td>
+                                                        @if(prop.Value is bool boolValue)
+                                                        {
+                                                            <span class="badge badge-@(boolValue ? "success" : "danger")">
+                                                                @(boolValue ? "Sí" : "No")
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            @prop.Value
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
             }
-
-            <a href="/Home/AddGas?id=@vehicle.ID">LLenar tanque</a>
-
-        </td>
-    </tr>
-        }
+        </tbody>
     </table>
 
-    <a href="/Home/AddMustang">Add Mustang</a>
-    <a href="/Home/AddExplorer">Add Explorer</a>
+    <div class="mt-4">
+        <h3>Agregar Vehículos</h3>
+        <div class="btn-group" role="group">
+            <a href="/Home/AddMustang" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Mustang
+            </a>
+            <a href="/Home/AddExplorer" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Explorer
+            </a>
+            <a href="/Home/AddEscape" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Escape
+            </a>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Auto-cerrar alertas después de 5 segundos
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+}

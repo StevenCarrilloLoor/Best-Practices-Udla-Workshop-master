@@ -1,4 +1,7 @@
-﻿using Best_Practices.Models;
+﻿
+// ARCHIVO MODIFICADO - Implementación thread-safe
+
+using Best_Practices.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,24 +9,17 @@ using System.Threading.Tasks;
 
 namespace Best_Practices.Infraestructure.Singletons
 {
-    public class VehicleCollection
+    public sealed class VehicleCollection
     {
-        private static VehicleCollection _instance;
+        // Thread-safe Singleton implementation usando Lazy<T>
+        private static readonly Lazy<VehicleCollection> lazy = 
+            new Lazy<VehicleCollection>(() => new VehicleCollection());
 
-        public static VehicleCollection Instance
-        {
-            get
-            {
-                if(_instance == null)
-                {
-                    _instance = new VehicleCollection();
-                }
-                return _instance;
-            }
-        }
+        public static VehicleCollection Instance => lazy.Value;
+        
         public ICollection<Vehicle> Vehicles { get; set; }
 
-        public VehicleCollection()
+        private VehicleCollection()
         {
             Vehicles = new List<Vehicle>();
         }

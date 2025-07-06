@@ -1,5 +1,5 @@
-﻿
-// ARCHIVO MODIFICADO - Agregar propiedades por defecto
+
+// ARCHIVO NUEVO - Factory para el modelo Escape
 
 using Best_Practices.ModelBuilders;
 using Best_Practices.Models;
@@ -10,18 +10,18 @@ using System.Threading.Tasks;
 
 namespace Best_Practices.Infraestructure.Factories
 {
-    public class FordExplorerCreator : Creator
+    public class FordEscapeCreator : Creator
     {
         public override Vehicle Create()
         {
             var builder = new CarBuilder();
             return builder
                 .SetBrand("Ford")
-                .SetModel("Explorer")
-                .SetColor("Black")
-                .SetDefaultProperties() // NUEVO: Establecer propiedades por defecto
-                .AddProperty("Type", "SUV") // NUEVO: Propiedades específicas
-                .AddProperty("SeatingCapacity", 7)
+                .SetModel("Escape")
+                .SetColor("Red") // Según requisitos
+                .SetDefaultProperties()
+                .AddProperty("Type", "Compact SUV")
+                .AddProperty("SeatingCapacity", 5)
                 .Build();
         }
     }

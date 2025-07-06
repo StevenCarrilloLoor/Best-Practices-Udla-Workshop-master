@@ -1,4 +1,7 @@
-﻿using Best_Practices.Infraestructure.Factories;
+﻿
+// ARCHIVO MODIFICADO - Agregar Factory Manager y método AddEscape
+
+using Best_Practices.Infraestructure.Factories;
 using Best_Practices.Infraestructure.Singletons;
 using Best_Practices.Models;
 using Best_Practices.Repositories;
@@ -15,13 +18,14 @@ namespace Best_Practices.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly VehicleFactoryManager _factoryManager; // NUEVO
 
         public HomeController(IVehicleRepository vehicleRepository, ILogger<HomeController> logger)
         {
             _vehicleRepository = vehicleRepository;
             _logger = logger;
+            _factoryManager = new VehicleFactoryManager(); // NUEVO: Inicializar factory manager
         }
 
         public IActionResult Index()
@@ -37,19 +41,50 @@ namespace Best_Practices.Controllers
         [HttpGet]
         public IActionResult AddMustang()
         {
-            var factory = new FordMustangCreator();
-            var vehicle = factory.Create();
-            _vehicleRepository.AddVehicle(vehicle);
-            return Redirect("/");
+            try
+            {
+                var vehicle = _factoryManager.CreateVehicle("Mustang"); // MODIFICADO: Usar factory manager
+                _vehicleRepository.AddVehicle(vehicle);
+                return Redirect("/");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al agregar Mustang");
+                return Redirect($"/?error={ex.Message}");
+            }
         }
 
         [HttpGet]
         public IActionResult AddExplorer()
         {
-            var factory = new FordExplorerCreator();
-            var vehicle = factory.Create();
-            _vehicleRepository.AddVehicle(vehicle);
-            return Redirect("/");
+            try
+            {
+                var vehicle = _factoryManager.CreateVehicle("Explorer"); // MODIFICADO: Usar factory manager
+                _vehicleRepository.AddVehicle(vehicle);
+                return Redirect("/");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al agregar Explorer");
+                return Redirect($"/?error={ex.Message}");
+            }
+        }
+
+        // NUEVO: Método para agregar Escape
+        [HttpGet]
+        public IActionResult AddEscape()
+        {
+            try
+            {
+                var vehicle = _factoryManager.CreateVehicle("Escape");
+                _vehicleRepository.AddVehicle(vehicle);
+                return Redirect("/");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al agregar Escape");
+                return Redirect($"/?error={ex.Message}");
+            }
         }
 
         [HttpGet]
@@ -100,10 +135,7 @@ namespace Best_Practices.Controllers
                 ViewBag.ErrorMessage = ex.Message;
                 return Redirect($"/?error={ex.Message}");
             }
-           
-           
         }
-
 
         public IActionResult Privacy()
         {
